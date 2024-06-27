@@ -1,0 +1,16 @@
+*  {
+  margin:0;
+  padding:0;
+};
+
+html{
+  overflow: scroll;
+}
+canvas1 {
+  top:0;
+  left:0;
+  width:4000px;
+  height:4000px;
+  color:black;
+  background-color: blue;
+}
