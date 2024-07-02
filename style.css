@@ -6,11 +6,48 @@
 html{
   overflow: scroll;
 }
-canvas1 {
+
+#canvas1 {
   top:0;
   left:0;
   width:4000px;
   height:4000px;
   color:black;
-  background-color: blue;
+  background-color: lightgoldenrodyellow;
+}
+#train {
+  display:none;
+  position:fixed;
+  top:0;
+  left:50%;
+  width:500px;
+  font-size:30px;
+  column-gap: 5px;
+  background-color: beige;
+  border:1px solid black;
+  row-gap: 5px;
+}
+#train > .header{
+  grid-template-columns: auto;
+  justify-self: center;
+}
+.trainButtons{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-items: center;
+}
+#train>*{
+  border-radius: 20px;
+  margin: 5px;
+    padding: 5px;
+}
+#newTrain{
+  font-size: 20px;
+  grid-template-columns: 2fr 1fr;
+  display:grid;  
+}
+#buttonTrainAdd,#buttonTrainDelete,#buttonTrainEdit,#buttonTrainRoute,#buttonTrainAddOk,#buttonTrainAddCancel{
+  font-size: 20px;
+  width:75px;
+  height:40px;
 }

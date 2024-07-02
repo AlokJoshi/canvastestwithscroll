@@ -1,14 +1,13 @@
+
 (() => {
 
   document.addEventListener("DOMContentLoaded", () => {
-    const GAME_WIDTH=4000
-    const GAME_HEIGHT=4000
-    const ROWS=800
-    const COLS=800
-    const CELL_WIDTH =GAME_WIDTH/COLS
-    const CELL_HEIGHT = GAME_HEIGHT/ROWS
-    const LONG_DISTANCE_MISSILES =10
-    const SHORT_DISTANCE_MISSILES =10
+    // const GAME_WIDTH=4000
+    // const GAME_HEIGHT=4000
+    // const ROWS=800
+    // const COLS=800
+    // const CELL_WIDTH =GAME_WIDTH/COLS
+    // const CELL_HEIGHT = GAME_HEIGHT/ROWS
     let iteration=0
     let mouse = {}
     let pointToClear = {}
@@ -18,9 +17,45 @@
     let animationFrame
     let pathStack=[]
     let buildingPath=false
+    let newPathStack=[]
+
+    //add listener for buttonTrainAdd
+    document.getElementById("buttonTrainAdd").addEventListener('click',(event)=>{
+      //start the process of creating a new train
+      //show the hidden input elements
+      document.getElementById("newTrain").style="display:grid"
+        
+    })
+    document.addEventListener('keyup',(event)=>{
+      console.log(event)
+      if(event.code=='KeyT'){
+        let el1 = document.getElementById("train")
+        el1.style=`display:grid;top:${mouse.y}px;left:${mouse.x}px`
+        let el2 = document.getElementById('buttonTrainRoute')
+        el2.onclick=clickedButtonTrainRoute
+      }
+      if(event.code=='KeyX'){
+        let el = document.getElementById("train")
+        el.style="display:none"
+      }
+    })
+
+    function clickedButtonTrainRoute(){
+      buildingPath=true
+      for(let i=0;i<pathStack.length;i++) newPathStack.push(pathStack[i])
+    }
+
+    function clickedButtonTrainAddOK(){
+        
+    }
+
+    function clickedButtonTrainAddCancel(){
+      buildingPath=false
+      pathStack=[]
+    }
 
     document.addEventListener('mousemove',(event)=>{
-      mouse={x:event.clientX,y:event.clientY}
+      mouse={x:event.pageX,y:event.pageY}
       if(buildingPath){
         let startPoint = pathStack[pathStack.length-1]
         drawGuide(startPoint)
@@ -31,7 +66,7 @@
       if(event.ctrlKey){
         if(pathStack.length==0){
 
-          pathStack.push({x:event.clientX,y:event.clientY})
+          pathStack.push({x:event.pageX,y:event.pageY})
         }else{
           pathStack.push({x:nextPoint.x,y:nextPoint.y})  
         }
@@ -43,55 +78,85 @@
     })
 
     function displayPath(){
+      const DOT=8
       ctx.beginPath()
-      ctx.fillStyle="black"
-      ctx.strokeStyle="black"
+      ctx.fillStyle="red"
+      ctx.strokeStyle="red"
       ctx.moveTo(pathStack[0].x,pathStack[0].y)
-      ctx.fillRect(pathStack[0].x,pathStack[0].y,4,4)
+      ctx.fillRect(pathStack[0].x-DOT/2,pathStack[0].y-DOT/2,DOT,DOT)
       for(i=1;i<pathStack.length;i++){
-        ctx.fillRect(pathStack[i].x,pathStack[i].y,4,4)
+        ctx.fillRect(pathStack[i].x-DOT/2,pathStack[i].y-DOT/2,DOT,DOT)
         ctx.lineTo(pathStack[i].x,pathStack[i].y)
       }  
       ctx.stroke()
       ctx.closePath()
     }
+
     function drawGuide(startPoint){
-      //draw x line
-      ctx.moveTo(startPoint.x,startPoint.y)
-      console.log(`moving to ${startPoint.x},${startPoint.y}`)
-      console.log(`mouse location ${mouse.x},${mouse.y}`)
-      
-      let a =Math.abs(mouse.x-startPoint.x)
-      let b=Math.abs(mouse.y-startPoint.y)
+      const DOT = 4
 
-      if (pointToClear){
-        // ctx.beginPath()
-        ctx.clearRect(pointToClear.x,pointToClear.y,2,2)
-        // ctx.closePath()
-      }
-      ctx.beginPath()
-      ctx.fillStyle='red'
-      if(a>b){
-        //draw a horizontal line
-        ctx.fillRect(mouse.x,startPoint.y,2,2)
-        ctx.fill()
-        ctx.closePath()
-        pointToClear = {x:mouse.x,y:startPoint.y}
-        nextPoint = {x:mouse.x,y:startPoint.y}
+      if(startPoint) {
+
+        //draw x line
+        ctx.moveTo(startPoint.x,startPoint.y)
+        console.log(`moving to ${startPoint.x},${startPoint.y}`)
+        console.log(`mouse location ${mouse.x},${mouse.x}`)
         
-      }else{
-        //draw a vertical line
-        ctx.fillRect(startPoint.x,mouse.y,2,2)
-        ctx.fill()
+        let a =Math.abs(mouse.x-startPoint.x)
+        let b=Math.abs(mouse.y-startPoint.y)
+        
+        if (pointToClear){
+          ctx.clearRect(pointToClear.x-DOT/2,pointToClear.y-DOT/2,DOT,DOT)
+        }
+        
+        ctx.beginPath()
+        ctx.fillStyle='red'
+        
+        //we need to check if the user is trying to reverse the track in the direction of the
+        //previous point. For instance if users previous 2 points are 
+        //{x:100;y:100} and {x:300,y:100} then if he is trying to move again on the x axis
+        //towards {x:100,y:100}, he should not be allowed to do so. Similarly on the y axis
+        let movingBackxDirection= false
+        let movingBackyDirection= false
+        let movedInxDirection
+        let movedInyDirection
+        let psl=pathStack.length
+        if(psl>1){
+          movedInxDirection = pathStack[psl-1].y==pathStack[psl-2].y
+          if(movedInxDirection){
+            movingBackxDirection = pathStack[psl-2].x<pathStack[psl-1].x?mouse.pageX<pathStack[psl-1].x:mouse.pageX>pathStack[psl-1].x
+          }else{  
+            movingBackyDirection = pathStack[psl-2].y<pathStack[psl-1].y?mouse.pageY<pathStack[psl-1].y:mouse.pageY>pathStack[psl-1].y
+          }
+        }
+        
+        if(a>b && !movingBackxDirection){
+          ctx.fillRect(mouse.pageX-DOT/2,startPoint.y-DOT/2,DOT,DOT)
+          ctx.fill()
+          ctx.closePath()
+          pointToClear = {x:mouse.x,y:startPoint.y}
+          nextPoint = {x:mouse.x,y:startPoint.y}
+          
+        }else if (b>=a && !movingBackyDirection){
+          ctx.fillRect(startPoint.x-DOT/2,mouse.pageY-DOT/2,DOT,DOT)
+          ctx.fill()
+          ctx.closePath()
+          pointToClear = {x:startPoint.x,y:mouse.y}
+          nextPoint  = {x:startPoint.x,y:mouse.y}
+        }
+        
         ctx.closePath()
-        pointToClear = {x:startPoint.x,y:mouse.y}
-        nextPoint  = {x:startPoint.x,y:mouse.y}
+        ctx.stroke()
       }
-      ctx.closePath()
-      ctx.stroke()
     }
-
+      
     function startGame(){
+      //test
+      console.log(trains.trains)
+
+
+      //test
+
       let segments
       for(let train=0;train<trains.length;train++){
         segments = getSegments(trains[train])
@@ -116,8 +181,8 @@
       ctx.closePath()
     }
     function displayIteration(iteration){
-      ctx.clearRect(GAME_WIDTH-50,0,100,40)
-      ctx.fillText(iteration,GAME_WIDTH-50,20)
+      ctx.clearRect(Game.GAME_WIDTH-50,0,100,40)
+      ctx.fillText(iteration,Game.GAME_WIDTH-50,20)
     }
     function drawGame(){
       iteration++
@@ -136,7 +201,7 @@
       //speed is highest when one iteration results in 
       //one unit of movement in the train.
       const coachWidth=5
-      const coachLength=GAME_WIDTH/COLS
+      const coachLength=Game.GAME_WIDTH/GAME.COLS
       let length
       let width
       let startX
@@ -235,7 +300,7 @@
     }
     function randomlyBomb(num){
       for(let i=0;i<num;i++){
-        bombCell(Math.floor(Math.random()*ROWS),Math.floor(Math.random()*COLS))
+        bombCell(Math.floor(Math.random()*GAME.ROWS),Math.floor(Math.random()*GAME.COLS))
       }
     }
     function createGrid(){
@@ -245,15 +310,15 @@
       ctx.beginPath();
       
       
-      for(let x=0;x<=COLS;x++){
-        let startX = x*GAME_WIDTH/COLS
+      for(let x=0;x<=GAME.COLS;x++){
+        let startX = x*Game.GAME_WIDTH/GAME.COLS
         ctx.moveTo(startX,0)
-        ctx.lineTo(startX,GAME_HEIGHT)
+        ctx.lineTo(startX,Game.GAME_HEIGHT)
       }
       for(let y=0;y<=ROWS;y++){
-        let startY = y*GAME_HEIGHT/ROWS
+        let startY = y*Game.GAME_HEIGHT/GAME.ROWS
         ctx.moveTo(0,startY)
-        ctx.lineTo(GAME_WIDTH,startY)
+        ctx.lineTo(Game.GAME_WIDTH,startY)
       }
 
       
@@ -266,83 +331,95 @@
     let canvas1 = document.getElementById("canvas1")
     ctx = canvas1.getContext('2d')
 
-    canvas1.height = GAME_HEIGHT
-    canvas1.width = GAME_WIDTH
+    canvas1.height = Game.GAME_HEIGHT
+    canvas1.width = Game.GAME_WIDTH
 
     ctx.font = "bold 20px serif";
     
-    // createGrid (ctx)
-    randomlyBomb(100)
-    createLongDistanceMissiles()
-    //bombCell(10,10)
-    trains = [
-      {name:'Mumbai Express',
-        length:15,
-        speed:25,
-        color:'blue',
-        path: {
-          start:{row:1,column:1},
-          to:[{row:1,column:60},{row:10,column:60},{row:10,column:50}]
-        }
-      },
-      {name:'Delhi Express',
-        length:5,
-        speed:10,
-        color:'red',
-        path: {
-          start:{row:100,column:100},
-          to:[{row:100,column:90},{row:90,column:90},{row:90,column:100}]
-        }
+    trains=new Trains()
+    let train
+    train = new Train( 'Mumbai Express','blue',25,15,{
+        start:{row:1,column:1},
+        to:[{row:1,column:60},{row:10,column:60},{row:10,column:50}]
       }
-    ]
-    function getSegments(train){
-      console.log(train)
-      let array=[]
-      let arrayIndex=0
-      let lastRow
-      let lastColumn
-      let stepX=GAME_WIDTH/COLS
-      let stepY=GAME_HEIGHT/ROWS
-      //starting point
-      array[arrayIndex]={x:(train.path.start.column)*stepX,y:(train.path.start.row)*stepY}
-      lastRow=train.path.start.row
-      lastColumn=train.path.start.column
-      for (const segment of train.path.to) {
-        if(segment.row!=lastRow){
-          let sign=segment.row>lastRow? 1:-1
-          let numIterations=Math.abs(segment.row-lastRow)
-          for(let i=0;i<numIterations;i++){
-            lastRow=lastRow+sign
-            array[++arrayIndex]={x:(lastColumn)*stepX,y:(lastRow)*stepY}  
-          }
-        }
-        if(segment.column!=lastColumn){
-          let sign=segment.column>lastColumn? 1:-1
-          let numIterations=Math.abs(segment.column-lastColumn)
-          for(let i=0;i<numIterations;i++){
-            lastColumn=lastColumn+sign
-            array[++arrayIndex]={x:(lastColumn)*stepX,y:(lastRow)*stepY}  
-          }
-        }
+    )
+    trains.add(train)
+
+    train = new Train( 'Delhi Express','red',10,5,{
+      start:{row:100,column:100},
+      to:[{row:100,column:90},{row:90,column:90},{row:90,column:100}]
       }
+    )
+    trains.add(train)
 
-      for(let i = 1;i<array.length-1;i++){
-        //set the direction in which the coach has to be drawn at point on the segment
-        array[i].xDirection = array[i].y==array[i+1].y
-        array[i].negXDirection = array[i].x < array[i-1].x
-        array[i].negYDirection = array[i].y < array[i-1].y
-      }
-      array[array.length-1].xDirection=array[array.length-2].xDirection
-      array[array.length-1].negXDirection=array[array.length-2].negXDirection
-      array[array.length-1].negYDirection=array[array.length-2].negYDirection
+    // trains = [
+    //   {name:'Mumbai Express',
+    //     length:15,
+    //     speed:25,
+    //     color:'blue',
+    //     path: {
+    //       start:{row:1,column:1},
+    //       to:[{row:1,column:60},{row:10,column:60},{row:10,column:50}]
+    //     }
+    //   },
+    //   {name:'Delhi Express',
+    //     length:5,
+    //     speed:10,
+    //     color:'red',
+    //     path: {
+    //       start:{row:100,column:100},
+    //       to:[{row:100,column:90},{row:90,column:90},{row:90,column:100}]
+    //     }
+    //   }
+    // ]
+    // function getSegments(train){
+    //   console.log(train)
+    //   let array=[]
+    //   let arrayIndex=0
+    //   let lastRow
+    //   let lastColumn
+    //   let stepX=GAME_WIDTH/COLS
+    //   let stepY=GAME_HEIGHT/ROWS
+    //   //starting point
+    //   array[arrayIndex]={x:(train.path.start.column)*stepX,y:(train.path.start.row)*stepY}
+    //   lastRow=train.path.start.row
+    //   lastColumn=train.path.start.column
+    //   for (const segment of train.path.to) {
+    //     if(segment.row!=lastRow){
+    //       let sign=segment.row>lastRow? 1:-1
+    //       let numIterations=Math.abs(segment.row-lastRow)
+    //       for(let i=0;i<numIterations;i++){
+    //         lastRow=lastRow+sign
+    //         array[++arrayIndex]={x:(lastColumn)*stepX,y:(lastRow)*stepY}  
+    //       }
+    //     }
+    //     if(segment.column!=lastColumn){
+    //       let sign=segment.column>lastColumn? 1:-1
+    //       let numIterations=Math.abs(segment.column-lastColumn)
+    //       for(let i=0;i<numIterations;i++){
+    //         lastColumn=lastColumn+sign
+    //         array[++arrayIndex]={x:(lastColumn)*stepX,y:(lastRow)*stepY}  
+    //       }
+    //     }
+    //   }
 
-      array[0].xDirection = array[1].xDirection
-      array[0].negXDirection = array[1].negXDirection
-      array[0].negYDirection = array[1].negYDirection
+    //   for(let i = 1;i<array.length-1;i++){
+    //     //set the direction in which the coach has to be drawn at point on the segment
+    //     array[i].xDirection = array[i].y==array[i+1].y
+    //     array[i].negXDirection = array[i].x < array[i-1].x
+    //     array[i].negYDirection = array[i].y < array[i-1].y
+    //   }
+    //   array[array.length-1].xDirection=array[array.length-2].xDirection
+    //   array[array.length-1].negXDirection=array[array.length-2].negXDirection
+    //   array[array.length-1].negYDirection=array[array.length-2].negYDirection
 
-      console.log(array)
-      return array
-    }
+    //   array[0].xDirection = array[1].xDirection
+    //   array[0].negXDirection = array[1].negXDirection
+    //   array[0].negYDirection = array[1].negYDirection
+
+    //   // console.log(array)
+    //   return array
+    // }
     startGame()
   });
 })()
