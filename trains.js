@@ -8,10 +8,16 @@ class Trains{
   delete(trainId){
     delete this.trains[trainId]
   }
-  trains(){
-    return this.trains.values()
-  }
   list(){
-    console.log(this.trains)
+    return Object.values(this.trains)
+  }
+  entries(){
+    return Object.entries(this.trains)
+  }
+  draw(ctx,iteration){
+    let entries = this.entries()
+    for(let e=0;e<entries.length;e++){
+      entries[e][1].draw(ctx,iteration)
+    }
   }
 }

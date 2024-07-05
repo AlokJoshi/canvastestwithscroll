@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-  <link rel="stylesheet" href="style.css">.3
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <canvas id="background"></canvas>
   <canvas id="canvas1"></canvas>
   <div id="train">
     <div class="header">Train</div>
@@ -20,17 +21,24 @@
       <div>Train Color</div>
       <div>
         <input type="radio" name="trainColor" id="black" value="black" checked  >
-        <label for="black">black</label>
+        <label for="black">Black</label>
         <input type="radio" name="trainColor" id="blue" value="blue">
-        <label for="blue">blue</label>
+        <label for="blue">Blue</label>
         <input type="radio" name="trainColor" id="red" value="red">
-        <label for="red">red</label>
+        <label for="red">Red</label>
         <input type="radio" name="trainColor" id="brown" value="brown">
-        <label for="brown">brown</label>
+        <label for="brown">Brown</label>
         <input type="radio" name="trainColor" id="pink" value="pink">
-        <label for="pink">pink</label>
+        <label for="pink">Pink</label>
       </div>
-      <div>Train Length</div><input type="number" min="1" max="20" id="trainLength">
+      <div>Train Length (#coaches)</div><input type="number" min="1" max="20" id="trainLength">
+      <div>Train Type </div>
+      <div>
+        <input type="radio" name="trainType" id="passenger" value="passenger" checked  >
+        <label for="passenger">Passenger</label>
+        <input type="radio" name="trainType" id="freight" value="freight">
+        <label for="freight">Freight</label>
+      </div>
       <div>Route(Control-Click points,Escape after last ponint)</div><button id="buttonTrainRoute">Route</button>
       <div><button id="buttonTrainAddOk">OK</button><button id="buttonTrainAddCancel">Cancel</button></div>
     </div>

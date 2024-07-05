@@ -7,14 +7,19 @@ html{
   overflow: scroll;
 }
 
-#canvas1 {
+#canvas1,#background {
   top:0;
   left:0;
   width:4000px;
   height:4000px;
+}
+#background{
   color:black;
   background-color: lightgoldenrodyellow;
+  position:fixed;
+  z-index: -10;
 }
+
 #train {
   display:none;
   position:fixed;

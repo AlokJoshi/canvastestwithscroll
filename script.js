@@ -13,19 +13,64 @@
     let pointToClear = {}
     let nextPoint = {}
     let ctx    /*context*/
-    let trains /*an array of trains*/
+    let bctx   /*background canvas context*/
+    let trains /* trains object*/
     let animationFrame
     let pathStack=[]
     let buildingPath=false
-    let newPathStack=[]
+
+    console.log('Hello from addEventListener')
+
+    let canvas1 = document.getElementById("canvas1")
+    ctx = canvas1.getContext('2d')
+
+    let background = document.getElementById("background")
+    bctx = background.getContext('2d')
+
+    canvas1.height = Game.GAME_HEIGHT
+    canvas1.width = Game.GAME_WIDTH
+    background.height = Game.GAME_HEIGHT
+    background.width = Game.GAME_WIDTH
+
+    ctx.font = "bold 20px serif";
+    
+    trains=new Trains()
+    let train
+    train = new Train( 'Mumbai Express','blue',25,'passenger',
+        [{row:1,column:1},
+          {row:1,column:60},
+          {row:10,column:60},
+          {row:10,column:50}]
+    )
+    trains.add(train.id,train)
+
+    train = new Train( 'Delhi Express','red',10,'freight',
+      [{row:100,column:100},
+          {row:100,column:90},
+          {row:90,column:90},
+          {row:90,column:100}]
+    )
+    trains.add(train.id,train)
+
+    createGrid()
+
+    startGame()
+
 
     //add listener for buttonTrainAdd
-    document.getElementById("buttonTrainAdd").addEventListener('click',(event)=>{
+    document.getElementById("buttonTrainAdd").addEventListener('click',()=>{
       //start the process of creating a new train
       //show the hidden input elements
       document.getElementById("newTrain").style="display:grid"
-        
+      
     })
+
+    document.getElementById("buttonTrainAddOk").addEventListener('click',clickedButtonTrainAddOK)
+    
+    // document.getElementById("buttonTrainAddOk").addEventListener('click',()=>{
+    //   document.getElementById("buttonTrainAddOk").onclick=clickedButtonTrainAddOK
+    // })
+
     document.addEventListener('keyup',(event)=>{
       console.log(event)
       if(event.code=='KeyT'){
@@ -42,11 +87,22 @@
 
     function clickedButtonTrainRoute(){
       buildingPath=true
-      for(let i=0;i<pathStack.length;i++) newPathStack.push(pathStack[i])
     }
-
+    
     function clickedButtonTrainAddOK(){
-        
+      //access the train add form and create a new train and add it to trains
+      let trainName,trainColor,trainLength,trainType,trainSpeed
+      let trainPath=[]
+      let el
+      trainName=document.getElementById('trainName').textContent
+      //document. querySelector('input[type = radio]:checked'). value
+      trainColor=document. querySelector( 'input[name = "trainColor"]:checked'). value
+      // trainColor=document.getElementById('trainColor').textContent
+      trainType=document. querySelector( 'input[name = "trainType"]:checked'). value
+      trainLength=document.getElementById('trainLength').textContent
+      //train speed depends on the Train type
+      for(let i=0;i<pathStack.length;i++) trainPath.push(pathStack[i])
+      let train = new Train(trainName,trainColor,trainLength,trainType,trainPath)
     }
 
     function clickedButtonTrainAddCancel(){
@@ -63,17 +119,29 @@
     })
 
     document.addEventListener('click',(event)=>{
-      if(event.ctrlKey){
+      if(event.ctrlKey && buildingPath){
+        //convert event.pageX to column number based on number of columns
+        // pathStack.push({column:Math.floor(event.pageX/Game.CELL_WIDTH),row:Math.floor(event.pageY/Game.CELL_HEIGHT)})
         if(pathStack.length==0){
-
-          pathStack.push({x:event.pageX,y:event.pageY})
+          pathStack.push({column:Math.floor(mouse.x/Game.CELL_WIDTH),row:Math.floor(mouse.y/Game.CELL_HEIGHT)})
+          
         }else{
-          pathStack.push({x:nextPoint.x,y:nextPoint.y})  
+          pathStack.push({column:Math.floor(nextPoint.x/Game.CELL_WIDTH),
+                          row:Math.floor(nextPoint.y/Game.CELL_HEIGHT),
+                          x:Math.floor(nextPoint.x/Game.CELL_WIDTH)*Game.CELL_WIDTH,
+                          y:Math.floor(nextPoint.y/Game.CELL_HEIGHT)*Game.CELL_HEIGHT})
+
         }
+
+        // if(pathStack.length==0){
+
+        //   pathStack.push({x:event.pageX,y:event.pageY})
+        // }else{
+        //   pathStack.push({x:nextPoint.x,y:nextPoint.y})  
+        // }
 
         console.log(pathStack)
         displayPath()
-        buildingPath=true
       }
     })
 
@@ -96,6 +164,8 @@
       const DOT = 4
 
       if(startPoint) {
+        startPoint.x = startPoint.column*Game.CELL_WIDTH
+        startPoint.y = startPoint.row*Game.CELL_HEIGHT
 
         //draw x line
         ctx.moveTo(startPoint.x,startPoint.y)
@@ -105,7 +175,7 @@
         let a =Math.abs(mouse.x-startPoint.x)
         let b=Math.abs(mouse.y-startPoint.y)
         
-        if (pointToClear){
+        if (pointToClear.x){
           ctx.clearRect(pointToClear.x-DOT/2,pointToClear.y-DOT/2,DOT,DOT)
         }
         
@@ -124,21 +194,22 @@
         if(psl>1){
           movedInxDirection = pathStack[psl-1].y==pathStack[psl-2].y
           if(movedInxDirection){
-            movingBackxDirection = pathStack[psl-2].x<pathStack[psl-1].x?mouse.pageX<pathStack[psl-1].x:mouse.pageX>pathStack[psl-1].x
-          }else{  
-            movingBackyDirection = pathStack[psl-2].y<pathStack[psl-1].y?mouse.pageY<pathStack[psl-1].y:mouse.pageY>pathStack[psl-1].y
+            movingBackxDirection = pathStack[psl-2].x<pathStack[psl-1].x?mouse.x<pathStack[psl-1].x:mouse.x>pathStack[psl-1].x
+          }else{ 
+            //moved in y direction 
+            movingBackyDirection = pathStack[psl-2].y<pathStack[psl-1].y?mouse.y<pathStack[psl-1].y:mouse.y>pathStack[psl-1].y
           }
         }
         
         if(a>b && !movingBackxDirection){
-          ctx.fillRect(mouse.pageX-DOT/2,startPoint.y-DOT/2,DOT,DOT)
+          ctx.fillRect(mouse.x-DOT/2,startPoint.y-DOT/2,DOT,DOT)
           ctx.fill()
           ctx.closePath()
           pointToClear = {x:mouse.x,y:startPoint.y}
           nextPoint = {x:mouse.x,y:startPoint.y}
           
         }else if (b>=a && !movingBackyDirection){
-          ctx.fillRect(startPoint.x-DOT/2,mouse.pageY-DOT/2,DOT,DOT)
+          ctx.fillRect(startPoint.x-DOT/2,mouse.y-DOT/2,DOT,DOT)
           ctx.fill()
           ctx.closePath()
           pointToClear = {x:startPoint.x,y:mouse.y}
@@ -152,30 +223,41 @@
       
     function startGame(){
       //test
-      console.log(trains.trains)
+      console.log(trains.list())
 
 
       //test
-
-      let segments
-      for(let train=0;train<trains.length;train++){
-        segments = getSegments(trains[train])
-        trains[train].segments=segments
-        drawSegments(trains[train].segments)
-        console.log(trains[train].segments)
+      let points
+      let entries = trains.entries()
+      for(let t=0;t<entries.length;t++){
+        let trainId = entries[t][0]
+        let train = entries[t][1]
+        points = train.points
+        drawPoints(points)
+        console.log(points)
       }
-      animationFrame = requestAnimationFrame(drawGame)
+      // for(let train=0;trains.entries();train++){
+      //   let trainId = trains[train][0]
+      //   let train = trains[train][1]
+      //   points = train.points
+      //   drawPoints(trains[train].points)
+      //   console.log(trains[train].points)
+      // }
+      drawGame()
+      // animationFrame = requestAnimationFrame(drawGame)
     }
-    function drawSegments(segments){
+
+
+    function drawPoints(points){
       ctx.save()
       ctx.strokeStyle='brown'
       ctx.lineWidth = 1 
       ctx.setLineDash([2,2]);
       
       ctx.beginPath()
-      ctx.moveTo(segments[0].x,segments[0].y)
-      for(let index=1;index<segments.length;index++){
-        ctx.lineTo(segments[index].x,segments[index].y)
+      ctx.moveTo(points[0].x,points[0].y)
+      for(let index=1;index<points.length;index++){
+        ctx.lineTo(points[index].x,points[index].y)
       }
       ctx.stroke()
       ctx.closePath()
@@ -188,20 +270,15 @@
       iteration++
       displayIteration(iteration)
       if(trains){
-        drawTrains(iteration)
+        trains.draw(ctx,iteration)
       }
       requestAnimationFrame(drawGame)
-    }
-    function drawTrains(iteration){
-      for(let train=0;train<trains.length;train++){
-        drawTrain(trains[train],iteration)
-      }
     }
     function drawTrain(train,iteration){
       //speed is highest when one iteration results in 
       //one unit of movement in the train.
       const coachWidth=5
-      const coachLength=Game.GAME_WIDTH/GAME.COLS
+      const coachLength=Game.GAME_WIDTH/Game.COLS
       let length
       let width
       let startX
@@ -214,20 +291,20 @@
         return
       }
 
-      index = index % (train.segments.length+train.length)
+      index = index % (train.points.length+train.length)
       
       
       //draw a coach/engine at index position
-      if(index<train.segments.length){
+      if(index<train.points.length){
         //what direction is this coach travelling
         
-        length  = (train.segments[index].xDirection?coachLength:coachWidth) - 1
-        width = (train.segments[index].xDirection?coachWidth:coachLength) - 1
+        length  = (train.points[index].xDirection?coachLength:coachWidth) - 1
+        width = (train.points[index].xDirection?coachWidth:coachLength) - 1
 
-        // startX = train.segments[index].negXDirection? train.segments[index].x-length : train.segments[index].x
-        // startY = train.segments[index].negYDirection? train.segments[index].y-width : train.segments[index].y
-        startX = train.segments[index].x-length/2
-        startY = train.segments[index].y-width/2
+        // startX = train.points[index].negXDirection? train.points[index].x-length : train.points[index].x
+        // startY = train.points[index].negYDirection? train.points[index].y-width : train.points[index].y
+        startX = train.points[index].x-length/2
+        startY = train.points[index].y-width/2
         
         ctx.fillStyle=train.color
         ctx.fillRect(startX,startY,length,width)
@@ -240,186 +317,52 @@
       if(index-train.length>-1){
         //what direction is this coach travelling
         
-        length  = (train.segments[index-train.length].xDirection?coachLength:coachWidth)
-        width =train.segments[index-train.length].xDirection?coachWidth:coachLength
+        length  = (train.points[index-train.length].xDirection?coachLength:coachWidth)
+        width =train.points[index-train.length].xDirection?coachWidth:coachLength
 
-        // startX = train.segments[index-train.length].negXDirection? train.segments[index-train.length].x-length : train.segments[index-train.length].x
-        // startY = train.segments[index-train.length].negYDirection? train.segments[index-train.length].y-width : train.segments[index-train.length].y
-        startX = train.segments[index-train.length].x-length/2
-        startY = train.segments[index-train.length].y-width/2
+        // startX = train.points[index-train.length].negXDirection? train.points[index-train.length].x-length : train.points[index-train.length].x
+        // startY = train.points[index-train.length].negYDirection? train.points[index-train.length].y-width : train.points[index-train.length].y
+        startX = train.points[index-train.length].x-length/2
+        startY = train.points[index-train.length].y-width/2
 
         ctx.clearRect(startX,startY,length,width)  
       }
 
       //draw a line from start towards the end
       //console.log(train.length, train.path, train.path.to.length)
-      if(train.length && train.segments.length>train.length){
+      if(train.length && train.points.length>train.length){
 
         //draw as many lines as the train.length
       }
     }
 
-    function createLongDistanceMissiles(){
-      //each missile is a separate object with its own
-      //canvas
-      for(let m=0;m<LONG_DISTANCE_MISSILES;m++){
-        let canvas=document.createElement('canvas')
-        canvas.id=`LDM${m+1}`
-        canvas.width=CELL_WIDTH*2
-        canvas.height=CELL_HEIGHT*3
-        canvas.backgroundColor='blue'
-        let ctx = canvas.getContext('2d')
-        ctx.fillText(`LDM${m+1}`,20,20)
-        document.getElementById('assets').appendChild(canvas)
-      }
-    }
-    function createShortDistanceMissiles(){
-
-    }
-    function bombCell(row,col){
-      //draw a red circle in that cell
-      //rows and cols are 0 based
-      let centerX = CELL_HEIGHT*(row+0.5) 
-      let centerY = CELL_WIDTH*(col+0.5)
-      let radius = CELL_WIDTH<CELL_HEIGHT?CELL_WIDTH/2-2:CELL_HEIGHT/2-2
-      ctx.beginPath()
-      ctx.fillStyle='red'
-      ctx.arc(centerX,centerY,radius,0,2*Math.PI)
-      ctx.fill()
-      ctx.closePath()
-
-      //remove effect of bomb
-      setTimeout(()=>{
-        //clearBomb 
-        ctx.beginPath()
-      ctx.fillStyle='rgb(255,200,200)'
-      ctx.arc(centerX,centerY,radius,0,2*Math.PI)
-      ctx.fill()
-      ctx.closePath()
-      },Math.random()*1000)
-    }
-    function randomlyBomb(num){
-      for(let i=0;i<num;i++){
-        bombCell(Math.floor(Math.random()*GAME.ROWS),Math.floor(Math.random()*GAME.COLS))
-      }
-    }
     function createGrid(){
-      ctx.save()
-      ctx.lineWidth=0.5;
       
-      ctx.beginPath();
+      bctx.save()
+      bctx.lineWidth=0.5;
+      
+      bctx.beginPath();
       
       
-      for(let x=0;x<=GAME.COLS;x++){
-        let startX = x*Game.GAME_WIDTH/GAME.COLS
-        ctx.moveTo(startX,0)
-        ctx.lineTo(startX,Game.GAME_HEIGHT)
+      for(let x=0;x<=Game.COLS;x++){
+        let startX = x*Game.GAME_WIDTH/Game.COLS
+        bctx.moveTo(startX,0)
+        bctx.lineTo(startX,Game.GAME_HEIGHT)
       }
-      for(let y=0;y<=ROWS;y++){
-        let startY = y*Game.GAME_HEIGHT/GAME.ROWS
-        ctx.moveTo(0,startY)
-        ctx.lineTo(Game.GAME_WIDTH,startY)
+      for(let y=0;y<=Game.ROWS;y++){
+        let startY = y*Game.GAME_HEIGHT/Game.ROWS
+        bctx.moveTo(0,startY)
+        bctx.lineTo(Game.GAME_WIDTH,startY)
       }
 
       
-      ctx.stroke()
-      ctx.restore()
+      bctx.stroke()
+      bctx.restore()
     }
 
-    console.log('Hello')
-
-    let canvas1 = document.getElementById("canvas1")
-    ctx = canvas1.getContext('2d')
-
-    canvas1.height = Game.GAME_HEIGHT
-    canvas1.width = Game.GAME_WIDTH
-
-    ctx.font = "bold 20px serif";
     
-    trains=new Trains()
-    let train
-    train = new Train( 'Mumbai Express','blue',25,15,{
-        start:{row:1,column:1},
-        to:[{row:1,column:60},{row:10,column:60},{row:10,column:50}]
-      }
-    )
-    trains.add(train)
 
-    train = new Train( 'Delhi Express','red',10,5,{
-      start:{row:100,column:100},
-      to:[{row:100,column:90},{row:90,column:90},{row:90,column:100}]
-      }
-    )
-    trains.add(train)
-
-    // trains = [
-    //   {name:'Mumbai Express',
-    //     length:15,
-    //     speed:25,
-    //     color:'blue',
-    //     path: {
-    //       start:{row:1,column:1},
-    //       to:[{row:1,column:60},{row:10,column:60},{row:10,column:50}]
-    //     }
-    //   },
-    //   {name:'Delhi Express',
-    //     length:5,
-    //     speed:10,
-    //     color:'red',
-    //     path: {
-    //       start:{row:100,column:100},
-    //       to:[{row:100,column:90},{row:90,column:90},{row:90,column:100}]
-    //     }
-    //   }
-    // ]
-    // function getSegments(train){
-    //   console.log(train)
-    //   let array=[]
-    //   let arrayIndex=0
-    //   let lastRow
-    //   let lastColumn
-    //   let stepX=GAME_WIDTH/COLS
-    //   let stepY=GAME_HEIGHT/ROWS
-    //   //starting point
-    //   array[arrayIndex]={x:(train.path.start.column)*stepX,y:(train.path.start.row)*stepY}
-    //   lastRow=train.path.start.row
-    //   lastColumn=train.path.start.column
-    //   for (const segment of train.path.to) {
-    //     if(segment.row!=lastRow){
-    //       let sign=segment.row>lastRow? 1:-1
-    //       let numIterations=Math.abs(segment.row-lastRow)
-    //       for(let i=0;i<numIterations;i++){
-    //         lastRow=lastRow+sign
-    //         array[++arrayIndex]={x:(lastColumn)*stepX,y:(lastRow)*stepY}  
-    //       }
-    //     }
-    //     if(segment.column!=lastColumn){
-    //       let sign=segment.column>lastColumn? 1:-1
-    //       let numIterations=Math.abs(segment.column-lastColumn)
-    //       for(let i=0;i<numIterations;i++){
-    //         lastColumn=lastColumn+sign
-    //         array[++arrayIndex]={x:(lastColumn)*stepX,y:(lastRow)*stepY}  
-    //       }
-    //     }
-    //   }
-
-    //   for(let i = 1;i<array.length-1;i++){
-    //     //set the direction in which the coach has to be drawn at point on the segment
-    //     array[i].xDirection = array[i].y==array[i+1].y
-    //     array[i].negXDirection = array[i].x < array[i-1].x
-    //     array[i].negYDirection = array[i].y < array[i-1].y
-    //   }
-    //   array[array.length-1].xDirection=array[array.length-2].xDirection
-    //   array[array.length-1].negXDirection=array[array.length-2].negXDirection
-    //   array[array.length-1].negYDirection=array[array.length-2].negYDirection
-
-    //   array[0].xDirection = array[1].xDirection
-    //   array[0].negXDirection = array[1].negXDirection
-    //   array[0].negYDirection = array[1].negYDirection
-
-    //   // console.log(array)
-    //   return array
-    // }
-    startGame()
+    
+    
   });
 })()
