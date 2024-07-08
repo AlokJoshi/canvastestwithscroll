@@ -2,24 +2,17 @@
 (() => {
 
   document.addEventListener("DOMContentLoaded", () => {
-    // const GAME_WIDTH=4000
-    // const GAME_HEIGHT=4000
-    // const ROWS=800
-    // const COLS=800
-    // const CELL_WIDTH =GAME_WIDTH/COLS
-    // const CELL_HEIGHT = GAME_HEIGHT/ROWS
     let iteration=0
     let mouse = {}
     let pointToClear = {}
     let nextPoint = {}
     let ctx    /*context*/
     let bctx   /*background canvas context*/
+    let gctx   /*guide canvas context*/
     let trains /* trains object*/
-    let animationFrame
     let pathStack=[]
+    let waterBodies=new WaterBodies()
     let buildingPath=false
-
-    console.log('Hello from addEventListener')
 
     let canvas1 = document.getElementById("canvas1")
     ctx = canvas1.getContext('2d')
@@ -27,32 +20,20 @@
     let background = document.getElementById("background")
     bctx = background.getContext('2d')
 
+    let guide = document.getElementById("guide")
+    gctx = guide.getContext('2d')
+
     canvas1.height = Game.GAME_HEIGHT
     canvas1.width = Game.GAME_WIDTH
     background.height = Game.GAME_HEIGHT
     background.width = Game.GAME_WIDTH
+    guide.height = Game.GAME_HEIGHT
+    guide.width = Game.GAME_WIDTH
 
     ctx.font = "bold 20px serif";
     
-    trains=new Trains()
-    let train
-    train = new Train( 'Mumbai Express','blue',25,'passenger',
-        [{row:1,column:1},
-          {row:1,column:60},
-          {row:10,column:60},
-          {row:10,column:50}]
-    )
-    trains.add(train.id,train)
 
-    train = new Train( 'Delhi Express','red',10,'freight',
-      [{row:100,column:100},
-          {row:100,column:90},
-          {row:90,column:90},
-          {row:90,column:100}]
-    )
-    trains.add(train.id,train)
-
-    createGrid()
+    
 
     startGame()
 
@@ -66,10 +47,7 @@
     })
 
     document.getElementById("buttonTrainAddOk").addEventListener('click',clickedButtonTrainAddOK)
-    
-    // document.getElementById("buttonTrainAddOk").addEventListener('click',()=>{
-    //   document.getElementById("buttonTrainAddOk").onclick=clickedButtonTrainAddOK
-    // })
+    document.getElementById("buttonTrainAddCancel").addEventListener('click',clickedButtonTrainAddCancel)
 
     document.addEventListener('keyup',(event)=>{
       console.log(event)
@@ -78,6 +56,10 @@
         el1.style=`display:grid;top:${mouse.y}px;left:${mouse.x}px`
         let el2 = document.getElementById('buttonTrainRoute')
         el2.onclick=clickedButtonTrainRoute
+      }
+      if(event.code=='KeyF'){
+        let el1 = document.getElementById("finances")
+        el1.style=el1.style.display=='none'?`display:grid;`:`display:none;`
       }
       if(event.code=='KeyX'){
         let el = document.getElementById("train")
@@ -91,30 +73,37 @@
     
     function clickedButtonTrainAddOK(){
       //access the train add form and create a new train and add it to trains
-      let trainName,trainColor,trainLength,trainType,trainSpeed
+      let trainName,trainColor,trainLength,trainType
       let trainPath=[]
       let el
-      trainName=document.getElementById('trainName').textContent
+      trainName=document.getElementById('trainName').value
       //document. querySelector('input[type = radio]:checked'). value
-      trainColor=document. querySelector( 'input[name = "trainColor"]:checked'). value
+      trainColor=document. querySelector( 'input[name = "trainColor"]:checked').value
       // trainColor=document.getElementById('trainColor').textContent
-      trainType=document. querySelector( 'input[name = "trainType"]:checked'). value
-      trainLength=document.getElementById('trainLength').textContent
+      trainType=document. querySelector( 'input[name = "trainType"]:checked').value
+      trainLength=document.getElementById('trainLength').value*1
       //train speed depends on the Train type
       for(let i=0;i<pathStack.length;i++) trainPath.push(pathStack[i])
-      let train = new Train(trainName,trainColor,trainLength,trainType,trainPath)
+      let train = new Train(Game.getUniqueTrainId(),ctx,bctx,trainName,trainColor,trainLength,trainType,trainPath)
+      trains.add(train.id,train)
+      buildingPath=false
+      pathStack=[]
+      document.getElementById('train').style="display:none"
+      gctx.clearRect(0,0,Game.GAME_WIDTH,Game.GAME_HEIGHT)
     }
-
+    
     function clickedButtonTrainAddCancel(){
       buildingPath=false
       pathStack=[]
+      document.getElementById('train').style="display:none"
+      gctx.clearRect(0,0,Game.GAME_WIDTH,Game.GAME_HEIGHT)
     }
-
+    
     document.addEventListener('mousemove',(event)=>{
       mouse={x:event.pageX,y:event.pageY}
       if(buildingPath){
         let startPoint = pathStack[pathStack.length-1]
-        drawGuide(startPoint)
+        drawGuide(gctx,startPoint)
       }
     })
 
@@ -133,19 +122,12 @@
 
         }
 
-        // if(pathStack.length==0){
-
-        //   pathStack.push({x:event.pageX,y:event.pageY})
-        // }else{
-        //   pathStack.push({x:nextPoint.x,y:nextPoint.y})  
-        // }
-
         console.log(pathStack)
-        displayPath()
+        displayPath(gctx)
       }
     })
 
-    function displayPath(){
+    function displayPath(ctx){
       const DOT=8
       ctx.beginPath()
       ctx.fillStyle="red"
@@ -160,7 +142,7 @@
       ctx.closePath()
     }
 
-    function drawGuide(startPoint){
+    function drawGuide(ctx,startPoint){
       const DOT = 4
 
       if(startPoint) {
@@ -222,58 +204,86 @@
     }
       
     function startGame(){
-      //test
-      console.log(trains.list())
 
+      let farms = new Farms(bctx)
+      farms.draw()
 
-      //test
-      let points
-      let entries = trains.entries()
-      for(let t=0;t<entries.length;t++){
-        let trainId = entries[t][0]
-        let train = entries[t][1]
-        points = train.points
-        drawPoints(points)
-        console.log(points)
-      }
-      // for(let train=0;trains.entries();train++){
-      //   let trainId = trains[train][0]
-      //   let train = trains[train][1]
-      //   points = train.points
-      //   drawPoints(trains[train].points)
-      //   console.log(trains[train].points)
-      // }
+      createWaterBodies()
+
+      trains=new Trains()
+      let train
+      train = new Train( Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','blue',25,'passenger',
+          [{row:100,column:1},
+            {row:100,column:400}
+          ]
+      )
+      trains.add(train.id,train)
+
+      // train = new Train(Game.getUniqueTrainId(),ctx,bctx, 'Delhi Express','red',10,'freight',
+      //   [{row:100,column:100},
+      //       {row:100,column:90},
+      //       {row:90,column:90},
+      //       {row:90,column:100}]
+      // )
+      // trains.add(train.id,train)
+
+    createGrid(bctx)
       drawGame()
       // animationFrame = requestAnimationFrame(drawGame)
     }
 
+    function createWaterBodies(){
+      let wb
+      wb = new WaterBody(bctx,[
+        {translate:{x:100,y:100},radians:Math.PI/10,rectangle:{x:0,y:0,width:300,height:100}},
+        {translate:{x:300,y:0},radians:Math.PI/10,rectangle:{x:0,y:0,width:300,height:100}},
+        {translate:{x:300,y:0},radians:Math.PI/10,rectangle:{x:0,y:0,width:500,height:100}},
+        {translate:{x:500,y:0},radians:Math.PI/10,rectangle:{x:0,y:0,width:1000,height:100}}
+      ])
+      waterBodies.add(wb)
+      wb = new WaterBody(bctx,[
+        {translate:{x:1000,y:3000},radians:0,rectangle:{x:0,y:0,width:600,height:50}},
+        {translate:{x:600,y:0},radians:-Math.PI/10,rectangle:{x:0,y:0,width:1000,height:50}},
+        {translate:{x:1000,y:0},radians:-Math.PI/10,rectangle:{x:0,y:0,width:2000,height:50}}
+      ])
+      waterBodies.add(wb)
+      // wb = new WaterBody(bctx,0,{x:650,y:450,width:100,height:1000})
+      // waterBodies.add(wb)
+      waterBodies.draw()
+      let wb2 
+      wb2=new WaterBody2(bctx,2000,100,100,3500,200,"round")
+      wb2.draw()
+    }
 
-    function drawPoints(points){
-      ctx.save()
-      ctx.strokeStyle='brown'
-      ctx.lineWidth = 1 
-      ctx.setLineDash([2,2]);
+    function drawPoints(bctx,points){
+      bctx.save()
+      bctx.strokeStyle='brown'
+      bctx.lineWidth = 1 
+      bctx.setLineDash([2,2]);
       
-      ctx.beginPath()
-      ctx.moveTo(points[0].x,points[0].y)
+      bctx.beginPath()
+      bctx.moveTo(points[0].x,points[0].y)
       for(let index=1;index<points.length;index++){
-        ctx.lineTo(points[index].x,points[index].y)
+        bctx.lineTo(points[index].x,points[index].y)
       }
-      ctx.stroke()
-      ctx.closePath()
+      bctx.stroke()
+      bctx.closePath()
     }
-    function displayIteration(iteration){
-      ctx.clearRect(Game.GAME_WIDTH-50,0,100,40)
-      ctx.fillText(iteration,Game.GAME_WIDTH-50,20)
+
+    function displayIteration(bctx,iteration){
+      bctx.clearRect(Game.GAME_WIDTH-50,0,100,40)
+      bctx.fillText(iteration,Game.GAME_WIDTH-50,20)
     }
+
     function drawGame(){
       iteration++
-      displayIteration(iteration)
+      displayIteration(bctx,iteration)
       if(trains){
-        trains.draw(ctx,iteration)
+        trains.draw(iteration)
       }
       requestAnimationFrame(drawGame)
     }
+
     function drawTrain(train,iteration){
       //speed is highest when one iteration results in 
       //one unit of movement in the train.
@@ -336,7 +346,7 @@
       }
     }
 
-    function createGrid(){
+    function createGrid(bctx){
       
       bctx.save()
       bctx.lineWidth=0.5;

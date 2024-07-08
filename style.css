@@ -3,11 +3,12 @@
   padding:0;
 };
 
-html{
+body{
   overflow: scroll;
 }
 
-#canvas1,#background {
+#canvas1,#background,#guide {
+  position:absolute;
   top:0;
   left:0;
   width:4000px;
@@ -16,8 +17,18 @@ html{
 #background{
   color:black;
   background-color: lightgoldenrodyellow;
-  position:fixed;
   z-index: -10;
+}
+#canvas1{
+  z-index:-5
+}
+#guide{
+  z-index:-1;
+}
+
+#finances{
+  display:none;
+  grid-template-columns: 1fr 1fr;
 }
 
 #train {

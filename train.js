@@ -2,15 +2,21 @@ class Train{
   //train has a name
   //train has a color
   //train has a speed
-  constructor(name,color,length,type,segmentsArray){
-    this.id="T" + Math.random().toString(16).slice(2)
+  constructor(id,ctx,bctx,name,color,length,type,segmentsArray){
+    this.id=id
     this.color=color
     this.length=length //number of coaches
     this.segmentsArray = segmentsArray
     this.name=name
-    this.points = this.getPointsNew(segmentsArray)
+    this.ctx=ctx
+    this.bctx=bctx
+    //points is an array of objects. Each obj is 
+    //{x:##,y:##,xDirection:t/f,negXDirection:t/f,negYDirection:t/f,overWater:t/f}
+    this.points = this.getPointsNew(this.segmentsArray)
     this.type=type  //either passenger or freight
     this.speed=this.getSpeed(type,length) //speed will depend on whether it is passenger or freight and on length
+    this.index=0
+    this.drawTracks()
     return this
   }
   getSpeed(type,length){
@@ -56,6 +62,10 @@ class Train{
       array[i].xDirection = array[i].y==array[i+1].y
       array[i].negXDirection = array[i].x < array[i-1].x
       array[i].negYDirection = array[i].y < array[i-1].y
+      //check if this point is over water
+      let data=this.bctx.getImageData(array[i].x,array[i].y,1,1).data
+      array[i].overWater = (data[2]!=0) 
+      console.log(array[i].x,array[i].y,`overwater:${array[i].overWater}`)
     }
     array[array.length-1].xDirection=array[array.length-2].xDirection
     array[array.length-1].negXDirection=array[array.length-2].negXDirection
@@ -68,60 +78,11 @@ class Train{
     // console.log(array)
     return array
   }
-  getPoints(path){
-    console.log(path)
-    let array=[]
-    let arrayIndex=0
-    let lastRow
-    let lastColumn
-    let stepX=Game.GAME_WIDTH/Game.COLS
-    let stepY=Game.GAME_HEIGHT/Game.ROWS
-    // let stepX=this.game.GAME_WIDTH/this.game.COLS
-    // let stepY=this.game.GAME_HEIGHT/this.game.ROWS
-    //starting point
-    array[arrayIndex]={x:(path.start.column)*stepX,y:(path.start.row)*stepY}
-    lastRow=path.start.row
-    lastColumn=path.start.column
-    for (const segment of path.to) {
-      if(segment.row!=lastRow){
-        let sign=segment.row>lastRow? 1:-1
-        let numIterations=Math.abs(segment.row-lastRow)
-        for(let i=0;i<numIterations;i++){
-          lastRow=lastRow+sign
-          array[++arrayIndex]={x:(lastColumn)*stepX,y:(lastRow)*stepY}  
-        }
-      }
-      if(segment.column!=lastColumn){
-        let sign=segment.column>lastColumn? 1:-1
-        let numIterations=Math.abs(segment.column-lastColumn)
-        for(let i=0;i<numIterations;i++){
-          lastColumn=lastColumn+sign
-          array[++arrayIndex]={x:(lastColumn)*stepX,y:(lastRow)*stepY}  
-        }
-      }
-    }
-
-    for(let i = 1;i<array.length-1;i++){
-      //set the direction in which the coach has to be drawn at point on the segment
-      array[i].xDirection = array[i].y==array[i+1].y
-      array[i].negXDirection = array[i].x < array[i-1].x
-      array[i].negYDirection = array[i].y < array[i-1].y
-    }
-    array[array.length-1].xDirection=array[array.length-2].xDirection
-    array[array.length-1].negXDirection=array[array.length-2].negXDirection
-    array[array.length-1].negYDirection=array[array.length-2].negYDirection
-
-    array[0].xDirection = array[1].xDirection
-    array[0].negXDirection = array[1].negXDirection
-    array[0].negYDirection = array[1].negYDirection
-
-    // console.log(array)
-    return array
-  }
-  draw(ctx,iteration){
+  
+  draw(iteration){
       //speed is highest when one iteration results in 
       //one unit of movement in the train.
-      const coachWidth=5
+      const coachWidth=3
       const coachLength=Game.GAME_WIDTH/Game.COLS
       let index
       let length
@@ -131,39 +92,39 @@ class Train{
 
       let speed=this.speed
       if(iteration%speed==0){
-        index=iteration/speed
+        this.index++
       }else{
         return
       }
 
-      index = index % (this.points.length+this.length)
+      this.index = this.index % (this.points.length+this.length)
       
+      this.ctx.fillStyle=this.color
       
-      //draw a coach/engine at index position
-      if(index<this.points.length){
+      //draw a coach/engine at this.index position
+      if(this.index<this.points.length){
         //what direction is this coach travelling
         
-        length  = (this.points[index].xDirection?coachLength:coachWidth) - 1
-        width = (this.points[index].xDirection?coachWidth:coachLength) - 1
+        length  = (this.points[this.index].xDirection?coachLength:coachWidth) - 1
+        width = (this.points[this.index].xDirection?coachWidth:coachLength) - 1
 
-        startX = this.points[index].x-length/2
-        startY = this.points[index].y-width/2
+        startX = this.points[this.index].x-length/2
+        startY = this.points[this.index].y-width/2
         
-        ctx.fillStyle=train.color
-        ctx.fillRect(startX,startY,length,width)
+        this.ctx.fillRect(startX,startY,length,width)
       }
       
-      //remove/clear a coach at index-train.length position
-      if(index-this.length>-1){
+      //remove/clear a coach at this.index-train.length position
+      if(this.index-this.length>-1){
         //what direction is this coach travelling
         
-        length  = (this.points[index-this.length].xDirection?coachLength:coachWidth)
-        width =this.points[index-this.length].xDirection?coachWidth:coachLength
+        length  = (this.points[this.index-this.length].xDirection?coachLength:coachWidth)
+        width =this.points[this.index-this.length].xDirection?coachWidth:coachLength
 
-        startX = this.points[index-this.length].x-length/2
-        startY = this.points[index-this.length].y-width/2
+        startX = this.points[this.index-this.length].x-length/2
+        startY = this.points[this.index-this.length].y-width/2
 
-        ctx.clearRect(startX,startY,length,width)  
+        this.ctx.clearRect(startX,startY,length,width)  
       }
 
       //draw a line from start towards the end
@@ -172,5 +133,28 @@ class Train{
 
         //draw as many lines as the train.length
       }
+  }
+  drawTracks(){
+    this.bctx.save()
+    
+    for(let index=1;index<this.points.length;index++){
+      this.bctx.beginPath()
+      this.bctx.moveTo(this.points[index-1].x,this.points[index-1].y)
+      //if the track goes over waterbody then the color is different
+      if(this.points[index].overWater){
+        this.bctx.strokeStyle='yellow'
+        this.bctx.lineWidth = 4 
+        this.bctx.setLineDash([2,2]);
+      }else{
+        this.bctx.strokeStyle='darkgray'
+        this.bctx.lineWidth = 1 
+        this.bctx.setLineDash([4,2]);
+      }
+      this.bctx.lineTo(this.points[index].x,this.points[index].y)
+      // this.bctx.closePath()
+      this.bctx.stroke()
+      // this.bctx.moveTo(this.points[index].x,this.points[index].y)
+    }
+    this.bctx.restore()
   }
 }

@@ -14,10 +14,10 @@ class Trains{
   entries(){
     return Object.entries(this.trains)
   }
-  draw(ctx,iteration){
+  draw(iteration){
     let entries = this.entries()
     for(let e=0;e<entries.length;e++){
-      entries[e][1].draw(ctx,iteration)
+      entries[e][1].draw(iteration)
     }
   }
 }
