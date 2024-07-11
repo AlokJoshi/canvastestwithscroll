@@ -11,8 +11,9 @@
     let gctx   /*guide canvas context*/
     let trains /* trains object*/
     let pathStack=[]
-    let waterBodies=new WaterBodies()
     let buildingPath=false
+    let forest_el
+    let mountain_el
 
     let canvas1 = document.getElementById("canvas1")
     ctx = canvas1.getContext('2d')
@@ -205,10 +206,49 @@
       
     function startGame(){
 
+      forest_el = document.getElementById('forest')
+      forest_el.addEventListener('load',()=>{
+
+        let forest = new Forest(bctx,2000,1000,100,1500,Math.PI/2,0,Math.PI*2,forest_el)
+        forest.draw()
+  
+        forest = new Forest(bctx,2000,1200,300,750,Math.PI/2,0,Math.PI*2,forest_el)
+        forest.draw()
+        
+        forest = new Forest(bctx,1000,2500,300,750,3*Math.PI/4,0,Math.PI*2,forest_el)
+        forest.draw()
+
+        forest = new Forest(bctx,3000,2500,300,750,Math.PI/4,0,Math.PI*2,forest_el)
+        forest.draw()
+
+      })
+      forest_el.setAttribute('src',"forest.jpeg")
+
+      mountain_el = document.getElementById('mountain')
+      mountain_el.addEventListener('load',()=>{
+
+        let mountain = new Forest(bctx,2000,1200,150,500,Math.PI/2,0,Math.PI*2,mountain_el)
+        mountain.draw()
+  
+        mountain = new Forest(bctx,1000,2500,50,650,3*Math.PI/4,0,Math.PI*2,mountain_el)
+        mountain.draw()
+        
+        mountain = new Forest(bctx,3000,2500,250,650,Math.PI/4,0,Math.PI*2,mountain_el)
+        mountain.draw()
+
+        // mountain = new Forest(bctx,3000,2500,300,750,Math.PI/4,0,Math.PI*2,mountain_el)
+        // mountain.draw()
+
+      })
+      mountain_el.setAttribute('src',"mountain.jpeg")
+
+
+      // let fs=bctx.createPattern()
       let farms = new Farms(bctx)
-      farms.draw()
 
       createWaterBodies()
+
+      let wb = new WaterBodies2(ctx)
 
       trains=new Trains()
       let train
@@ -218,6 +258,9 @@
           ]
       )
       trains.add(train.id,train)
+
+      //this creates icons for industries
+      let industries=new Industries(bctx)
 
       // train = new Train(Game.getUniqueTrainId(),ctx,bctx, 'Delhi Express','red',10,'freight',
       //   [{row:100,column:100},
@@ -234,25 +277,25 @@
 
     function createWaterBodies(){
       let wb
-      wb = new WaterBody(bctx,[
-        {translate:{x:100,y:100},radians:Math.PI/10,rectangle:{x:0,y:0,width:300,height:100}},
-        {translate:{x:300,y:0},radians:Math.PI/10,rectangle:{x:0,y:0,width:300,height:100}},
-        {translate:{x:300,y:0},radians:Math.PI/10,rectangle:{x:0,y:0,width:500,height:100}},
-        {translate:{x:500,y:0},radians:Math.PI/10,rectangle:{x:0,y:0,width:1000,height:100}}
-      ])
-      waterBodies.add(wb)
-      wb = new WaterBody(bctx,[
-        {translate:{x:1000,y:3000},radians:0,rectangle:{x:0,y:0,width:600,height:50}},
-        {translate:{x:600,y:0},radians:-Math.PI/10,rectangle:{x:0,y:0,width:1000,height:50}},
-        {translate:{x:1000,y:0},radians:-Math.PI/10,rectangle:{x:0,y:0,width:2000,height:50}}
-      ])
-      waterBodies.add(wb)
+      // wb = new WaterBody(bctx,[
+      //   {translate:{x:100,y:100},radians:Math.PI/10,rectangle:{x:0,y:0,width:300,height:100}},
+      //   {translate:{x:300,y:0},radians:Math.PI/10,rectangle:{x:0,y:0,width:300,height:100}},
+      //   {translate:{x:300,y:0},radians:Math.PI/10,rectangle:{x:0,y:0,width:500,height:100}},
+      //   {translate:{x:500,y:0},radians:Math.PI/10,rectangle:{x:0,y:0,width:1000,height:100}}
+      // ])
+      // waterBodies.add(wb)
+      // wb = new WaterBody(bctx,[
+      //   {translate:{x:1000,y:3000},radians:0,rectangle:{x:0,y:0,width:600,height:50}},
+      //   {translate:{x:600,y:0},radians:-Math.PI/10,rectangle:{x:0,y:0,width:1000,height:50}},
+      //   {translate:{x:1000,y:0},radians:-Math.PI/10,rectangle:{x:0,y:0,width:2000,height:50}}
+      // ])
+      // waterBodies.add(wb)
+
       // wb = new WaterBody(bctx,0,{x:650,y:450,width:100,height:1000})
       // waterBodies.add(wb)
-      waterBodies.draw()
-      let wb2 
-      wb2=new WaterBody2(bctx,2000,100,100,3500,200,"round")
-      wb2.draw()
+      // waterBodies.draw()
+
+      
     }
 
     function drawPoints(bctx,points){
