@@ -246,17 +246,32 @@
       // let fs=bctx.createPattern()
       let farms = new Farms(bctx)
 
-      createWaterBodies()
-
       let wb = new WaterBodies2(ctx)
 
       trains=new Trains()
       let train
-      train = new Train( Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','blue',25,'passenger',
-          [{row:100,column:1},
-            {row:100,column:400}
+      train = new Train2( Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','blue',25,'passenger',
+          [{row:120,column:50},
+            {row:100,column:50},
+            {row:100,column:150},
+            {row:150,column:150},
+            {row:150,column:60},
+            {row:30,column:60},
+            {row:30,column:20},
+            {row:160,column:20},
+            {row:160,column:200},
+            {row:100,column:200},
           ]
       )
+      // train = new Train( Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','blue',25,'passenger',
+      //     [{row:100,column:1},
+      //       {row:100,column:10},
+      //       {row:120,column:10},
+      //       {row:120,column:20},
+      //       {row:100,column:20},
+      //       {row:100,column:5}
+      //     ]
+      // )
       trains.add(train.id,train)
 
       //this creates icons for industries
@@ -275,44 +290,6 @@
       // animationFrame = requestAnimationFrame(drawGame)
     }
 
-    function createWaterBodies(){
-      let wb
-      // wb = new WaterBody(bctx,[
-      //   {translate:{x:100,y:100},radians:Math.PI/10,rectangle:{x:0,y:0,width:300,height:100}},
-      //   {translate:{x:300,y:0},radians:Math.PI/10,rectangle:{x:0,y:0,width:300,height:100}},
-      //   {translate:{x:300,y:0},radians:Math.PI/10,rectangle:{x:0,y:0,width:500,height:100}},
-      //   {translate:{x:500,y:0},radians:Math.PI/10,rectangle:{x:0,y:0,width:1000,height:100}}
-      // ])
-      // waterBodies.add(wb)
-      // wb = new WaterBody(bctx,[
-      //   {translate:{x:1000,y:3000},radians:0,rectangle:{x:0,y:0,width:600,height:50}},
-      //   {translate:{x:600,y:0},radians:-Math.PI/10,rectangle:{x:0,y:0,width:1000,height:50}},
-      //   {translate:{x:1000,y:0},radians:-Math.PI/10,rectangle:{x:0,y:0,width:2000,height:50}}
-      // ])
-      // waterBodies.add(wb)
-
-      // wb = new WaterBody(bctx,0,{x:650,y:450,width:100,height:1000})
-      // waterBodies.add(wb)
-      // waterBodies.draw()
-
-      
-    }
-
-    function drawPoints(bctx,points){
-      bctx.save()
-      bctx.strokeStyle='brown'
-      bctx.lineWidth = 1 
-      bctx.setLineDash([2,2]);
-      
-      bctx.beginPath()
-      bctx.moveTo(points[0].x,points[0].y)
-      for(let index=1;index<points.length;index++){
-        bctx.lineTo(points[index].x,points[index].y)
-      }
-      bctx.stroke()
-      bctx.closePath()
-    }
-
     function displayIteration(bctx,iteration){
       bctx.clearRect(Game.GAME_WIDTH-50,0,100,40)
       bctx.fillText(iteration,Game.GAME_WIDTH-50,20)
@@ -320,73 +297,12 @@
 
     function drawGame(){
       iteration++
+      ctx.clearRect(0,0,Game.GAME_WIDTH,Game.GAME_HEIGHT)
       displayIteration(bctx,iteration)
       if(trains){
         trains.draw(iteration)
       }
       requestAnimationFrame(drawGame)
-    }
-
-    function drawTrain(train,iteration){
-      //speed is highest when one iteration results in 
-      //one unit of movement in the train.
-      const coachWidth=5
-      const coachLength=Game.GAME_WIDTH/Game.COLS
-      let length
-      let width
-      let startX
-      let startY
-
-      let speed=train.speed
-      if(iteration%speed==0){
-        index=iteration/speed
-      }else{
-        return
-      }
-
-      index = index % (train.points.length+train.length)
-      
-      
-      //draw a coach/engine at index position
-      if(index<train.points.length){
-        //what direction is this coach travelling
-        
-        length  = (train.points[index].xDirection?coachLength:coachWidth) - 1
-        width = (train.points[index].xDirection?coachWidth:coachLength) - 1
-
-        // startX = train.points[index].negXDirection? train.points[index].x-length : train.points[index].x
-        // startY = train.points[index].negYDirection? train.points[index].y-width : train.points[index].y
-        startX = train.points[index].x-length/2
-        startY = train.points[index].y-width/2
-        
-        ctx.fillStyle=train.color
-        ctx.fillRect(startX,startY,length,width)
-        // ctx.strokeStyle='black'
-        // ctx.lineWidth="2"
-        // ctx.rect(startX,startY,length,width )
-      }
-      
-      //remove/clear a coach at index-train.length position
-      if(index-train.length>-1){
-        //what direction is this coach travelling
-        
-        length  = (train.points[index-train.length].xDirection?coachLength:coachWidth)
-        width =train.points[index-train.length].xDirection?coachWidth:coachLength
-
-        // startX = train.points[index-train.length].negXDirection? train.points[index-train.length].x-length : train.points[index-train.length].x
-        // startY = train.points[index-train.length].negYDirection? train.points[index-train.length].y-width : train.points[index-train.length].y
-        startX = train.points[index-train.length].x-length/2
-        startY = train.points[index-train.length].y-width/2
-
-        ctx.clearRect(startX,startY,length,width)  
-      }
-
-      //draw a line from start towards the end
-      //console.log(train.length, train.path, train.path.to.length)
-      if(train.length && train.points.length>train.length){
-
-        //draw as many lines as the train.length
-      }
     }
 
     function createGrid(bctx){

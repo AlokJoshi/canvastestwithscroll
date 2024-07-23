@@ -16,6 +16,10 @@ class Train{
     this.type=type  //either passenger or freight
     this.speed=this.getSpeed(type,length) //speed will depend on whether it is passenger or freight and on length
     this.index=0
+    this.prevStartX=0 
+    this.prevXDirection
+    this.prevStartY=0 
+    this.prevYDirection
     this.drawTracks()
     return this
   }
@@ -83,8 +87,7 @@ class Train{
       //speed is highest when one iteration results in 
       //one unit of movement in the train.
       const coachWidth=3
-      const coachLength=Game.GAME_WIDTH/Game.COLS
-      let index
+      const coachLength=2*Game.GAME_WIDTH/Game.COLS
       let length
       let width
       let startX
@@ -98,9 +101,12 @@ class Train{
       }
 
       this.index = this.index % (this.points.length+this.length)
-      
+      if(this.index==0) this.prevStartX=0;this.prevStartY=0
+
       this.ctx.fillStyle=this.color
-      
+      this.ctx.strokeStyle='black'
+      this.ctx.lineWidth=0.1
+
       //draw a coach/engine at this.index position
       if(this.index<this.points.length){
         //what direction is this coach travelling
@@ -108,10 +114,44 @@ class Train{
         length  = (this.points[this.index].xDirection?coachLength:coachWidth) - 1
         width = (this.points[this.index].xDirection?coachWidth:coachLength) - 1
 
-        startX = this.points[this.index].x-length/2
-        startY = this.points[this.index].y-width/2
+        if(this.index==0){
+          startX=this.points[this.index].x-length/2
+          startY=this.points[this.index].y-width/2
+        }else{
+          if(this.prevXDirection !=this.points[this.index].xDirection){
+            if(!this.points[this.index].negXDirection){
+              startX = Math.max(this.prevStartX,this.points[this.index].x-length/2)
+            }else{
+              startX = Math.min(this.prevStartX,this.points[this.index].x-length/2) 
+            }
+          }else{
+            startX = this.points[this.index].x-length/2
+          }
+
+          if(this.prevYDirection ==this.points[this.index].xDirection){
+            if(!this.points[this.index].negYDirection){
+              startY = Math.max(this.prevStartY,this.points[this.index].y-width/2)
+            }else{
+              startY = Math.min(this.prevStartY,this.points[this.index].y-width/2) 
+            }
+          }else{
+            startY = this.points[this.index].x-length/2
+          }
+        }
+        // if(!this.points[this.index].negXDirection){
+        //   startX = Math.max(this.prevStartX,this.points[this.index].x-length/2)
+        // }else{
+        //   startX = Math.min(this.prevStartX,this.points[this.index].x-length/2)
+        // }
+        // startY = this.points[this.index].y-width/2
         
         this.ctx.fillRect(startX,startY,length,width)
+
+        this.prevStartX=startX
+        this.prevXDirection = this.points[this.index].xDirection
+
+        this.prevStartY=startY
+        this.prevYDirection = !this.points[this.index].Direction
       }
       
       //remove/clear a coach at this.index-train.length position
