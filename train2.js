@@ -8,11 +8,11 @@ class Train2 {
     this.ctx = ctx
     this.bctx = bctx
     //segments array looks like this:
-    // [{row:100,column:1},
-    //   {row:100,column:10},
-    //   {row:120,column:10},
-    //   {row:120,column:20},
-    //   {row:100,column:20},
+    // [{y:100,x:1},
+    //   {y:100,x:10},
+    //   {y:120,x:10},
+    //   {y:120,x:20},
+    //   {y:100,x:20},
     // ]
     //smoothedSegmentsArray is an array of objects. Each obj is 
     //{x:##,y:##,radian:##,distance:##}
@@ -43,8 +43,8 @@ class Train2 {
 
     //convert to x and y 
     for (let i = 0; i < segmentsArray.length; i++) {
-      sA.push({ x: lSA[i].column * Game.CELL_WIDTH, y: lSA[i].row * Game.CELL_HEIGHT })
-      console.log(`Orinal x: ${lSA[i].column * Game.CELL_WIDTH}, Original y: ${lSA[i].row * Game.CELL_HEIGHT}`)
+      sA.push({ x: lSA[i].x , y: lSA[i].y ,curve:false})
+      console.log(`Orinal x: ${lSA[i].x}, Original y: ${lSA[i].y},curve:${false}`)
     }
 
     //from now on deal with sA and push into sAFinal
