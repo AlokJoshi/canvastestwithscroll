@@ -13,7 +13,7 @@ class Farm{
     this.ctx.lineCap="round"
     this.ctx.lineWidth=this.size=='small'?50:this.size=='medium'?100:200
     this.ctx.beginPath()
-    console.log(this.x1,this.y1,this.x2,this.y2)
+    // console.log(this.x1,this.y1,this.x2,this.y2)
     this.ctx.moveTo(this.x1,this.y1)
     this.ctx.lineTo(this.x2,this.y2)
     this.ctx.stroke()

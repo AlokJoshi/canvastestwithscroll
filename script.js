@@ -251,16 +251,16 @@
       trains=new Trains()
       let train
       train = new Train2( Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','blue',25,'passenger',
-          [{row:120*5,column:50*5},
-            {row:100*5,column:50*5},
-            {row:100*5,column:150*5}
-            //, {row:150*5,column:150*5},
-            // {row:150*5,column:60*5},
-            // {row:30*5,column:60*5},
-            // {row:30*5,column:20*5},
-            // {row:160*5,column:20*5},
-            // {row:160*5,column:200*5},
-            // {row:100*5,column:200*5},
+          [{x:140*5,y:50*5},
+            {x:100*5,y:50*5},
+            {x:100*5,y:150*5},
+            {x:150*5,y:150*5},
+            {x:150*5,y:60*5},
+            {x:30*5,y:60*5},
+            {x:30*5,y:20*5},
+            {x:160*5,y:20*5},
+            {x:160*5,y:200*5},
+            {x:100*5,y:200*5},
           ]
       )
       // train = new Train( Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','blue',25,'passenger',
