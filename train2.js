@@ -40,10 +40,17 @@ class Train2 {
     let numdivisions = 10
 
     //convert to x and y 
-    for (let i = 0; i < segmentsArray.length; i++) {
-      sA.push({ x: lSA[i].x, y: lSA[i].y, curve: false })
-      console.log(`Orinal x: ${lSA[i].x}, Original y: ${lSA[i].y},curve:${false}`)
+    for (let i = 0; i < segmentsArray.length - 1; i++) {
+      let radian
+      if (lSA[i + 1].y == lSA[i].y) {
+        radian = lSA[i + 1].x > lSA[i].x ? 0 : Math.PI
+      } else if (lSA[i + 1].x == lSA[i].x) {
+        radian = lSA[i + 1].y > lSA[i].y ? Math.PI / 2 : 3 * Math.PI / 2
+      }
+      sA.push({ x: lSA[i].x, y: lSA[i].y, radian, curve: false })
+      console.log(`Orinal x: ${lSA[i].x}, Original y: ${lSA[i].y}, radian:${radian}, curve:${false}`)
     }
+    sA.push({ x: lSA[segmentsArray.length-1].x, y: lSA[segmentsArray.length-1].y, radian: sA[sA.length-1].radian, curve: false })
 
     //from now on deal with sA and push into sAFinal
     let done = false
@@ -57,22 +64,11 @@ class Train2 {
       //we can add both curr and next
       if ((curr.x == next.x && next.x == next2next.x) || (curr.y == next.y && next.y == next2next.y)) {
         if (curr.x == next.x && next.x == next2next.x) {
-          curr.radian = next.y > curr.y ? 3*Math.PI / 2 : Math.PI / 2
-
-
-          next.radian = next2next.y > next.y ? 3*Math.PI / 2 : Math.PI / 2
-
-
           sAFinal.push(curr)
           sAFinal.push(next)
           curr = next2next
           i += 2
         } else if (curr.y == next.y && next.y == next2next.y) {
-          curr.radian = next.x > curr.x ? 0 : Math.PI
-
-
-          next.radian = next2next.x > next.x ? 0 : Math.PI
-
           sAFinal.push(curr)
           sAFinal.push(next)
           curr = next2next
@@ -81,7 +77,7 @@ class Train2 {
       } else {
         if (curr.x == next.x) {
 
-          curr.radian = next.y > curr.y ?  3 * Math.PI / 2 : Math.PI / 2 
+          curr.radian = next.y > curr.y ? 3 * Math.PI / 2 : Math.PI / 2
           //push the curr node into the sAFinal
           sAFinal.push(curr)
 
@@ -157,7 +153,6 @@ class Train2 {
       done = i + 2 > segmentsArray.length - 1
       //last to last point is new2
       if (done && curr) {
-        curr.radian = curr.x == next.x ? (next.y > curr.y ?  3 * Math.PI / 2 :Math.PI / 2) : next.x > curr.x ? 0 : Math.PI
         sAFinal.push(curr)
       }
     }
@@ -211,7 +206,7 @@ class Train2 {
         // const x = centerx + radius * Math.cos(radian)
         // const y = centery + radius * Math.sin(radian)
         sAFinal.push({
-          x, y, radian: curr.radian - (i+1)*theta, curve: true
+          x, y, radian: curr.radian - (i + 1) * theta, curve: true
         })
         // console.log(`radian:${radian}, x:${x}, y:${y}, radian:${radian}`)
       }
@@ -284,21 +279,21 @@ class Train2 {
     }
 
     //the location at which the first coach is
-    this.index = this.index % (this.points.length + this.length * (Game.coachLength+1))
+    this.index = this.index % (this.points.length + this.length * (Game.coachLength + 1))
     // this.index = this.index % (this.points.length + this.length)
 
-    for(let co=0;co<this.length;co++){
+    for (let co = 0; co < this.length; co++) {
       //draw a coach/engine at this.index position
       // if (this.index-co*(Game.coachLength+1)>=0 && this.index+co*(Game.coachLength+1) < this.points.length) {
-        // let index = this.index-co*(Game.coachLength+1)
-      const index = this.index-co*(Game.coachLength+1)
-      if (index>=0 && index < this.points.length) {
+      // let index = this.index-co*(Game.coachLength+1)
+      const index = this.index - co * (Game.coachLength + 1)
+      if (index >= 0 && index < this.points.length) {
         //this creates a new coach and draws it as well
-        let coach = new Coach(this.ctx,this.points[index].x, this.points[index].y,this.points[index].radian,
-          this.color)       
-        
-      }else if (index>=this.points.length){
-        debugger
+        let coach = new Coach(this.ctx, this.points[index].x, this.points[index].y, this.points[index].radian,
+          this.color)
+
+      } else if (index >= this.points.length) {
+        // debugger
       }
     }
 

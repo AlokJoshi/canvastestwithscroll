@@ -110,19 +110,14 @@
 
     document.addEventListener('click',(event)=>{
       if(event.ctrlKey && buildingPath){
-        //convert event.pageX to column number based on number of columns
-        // pathStack.push({column:Math.floor(event.pageX/Game.CELL_WIDTH),row:Math.floor(event.pageY/Game.CELL_HEIGHT)})
         if(pathStack.length==0){
-          pathStack.push({column:Math.floor(mouse.x/Game.CELL_WIDTH),row:Math.floor(mouse.y/Game.CELL_HEIGHT)})
+          pathStack.push({x:mouse.x,y:mouse.y})
           
         }else{
-          pathStack.push({column:Math.floor(nextPoint.x/Game.CELL_WIDTH),
-                          row:Math.floor(nextPoint.y/Game.CELL_HEIGHT),
-                          x:Math.floor(nextPoint.x/Game.CELL_WIDTH)*Game.CELL_WIDTH,
-                          y:Math.floor(nextPoint.y/Game.CELL_HEIGHT)*Game.CELL_HEIGHT})
+          pathStack.push({x:nextPoint.x,
+                          y:nextPoint.y})
 
         }
-
         console.log(pathStack)
         displayPath(gctx)
       }
@@ -264,7 +259,53 @@
             // {x:160*5,y:160*5},
             // {x:100*5,y:160*5},
           ]
-      )
+        )
+        trains.add(train.id,train)
+        train = new Train2(Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','black',2,'passenger',
+          [ {x:50*5,y:50*5},
+            {x:75*5,y:50*5},
+            {x:100*5,y:50*5},
+          ]
+        )
+        trains.add(train.id,train)
+
+        train = new Train2(Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','brown',3,'passenger',
+          [ {x:100*5,y:40*5},
+            {x:75*5,y:40*5},
+            {x:50*5,y:40*5},
+          ]
+        )
+        trains.add(train.id,train)
+
+        train = new Train2(Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','green',2,'passenger',
+          [ {x:10*5,y:50*5},
+            {x:10*5,y:100*5},
+            {x:10*5,y:150*5},
+            // {x:150*5,y:60*5},
+            // {x:30*5,y:60*5},
+            // {x:30*5,y:10*5},
+            // {x:160*5,y:10*5},
+            // {x:160*5,y:160*5},
+            // {x:100*5,y:160*5},
+          ]
+        )
+        trains.add(train.id,train)
+
+        train = new Train2(Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','yellow',2,'passenger',
+          [ {x:30*5,y:150*5},
+            {x:30*5,y:100*5},
+            {x:30*5,y:50*5},
+            // {x:150*5,y:60*5},
+            // {x:30*5,y:60*5},
+            // {x:30*5,y:10*5},
+            // {x:160*5,y:10*5},
+            // {x:160*5,y:160*5},
+            // {x:100*5,y:160*5},
+          ]
+        )
+        trains.add(train.id,train)
+
+
       // train = new Train( Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','blue',25,'passenger',
       //     [{row:100,column:1},
       //       {row:100,column:10},
@@ -274,7 +315,6 @@
       //       {row:100,column:5}
       //     ]
       // )
-      trains.add(train.id,train)
 
       //this creates icons for industries
       let industries=new Industries(bctx)
@@ -297,14 +337,19 @@
       bctx.fillText(iteration,Game.GAME_WIDTH-50,20)
     }
 
+    let day=0
     function drawGame(){
       iteration++
+      if(iteration % 10000 == 0) {
+        day++
+        alert (`Day ${day}`)
+      }
       ctx.clearRect(0,0,Game.GAME_WIDTH,Game.GAME_HEIGHT)
       displayIteration(bctx,iteration)
       if(trains){
         trains.draw(iteration)
-        requestAnimationFrame(drawGame)
       }
+      requestAnimationFrame(drawGame)
     }
 
     function createGrid(bctx){
