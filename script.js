@@ -251,16 +251,18 @@
       trains=new Trains()
       let train
       train = new Train2( Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','blue',25,'passenger',
-          [{x:140*5,y:50*5},
+          [ {x:160*5,y:50*5},
+            {x:150*5,y:50*5},
+            {x:140*5,y:50*5},
             {x:100*5,y:50*5},
             {x:100*5,y:150*5},
             {x:150*5,y:150*5},
-            {x:150*5,y:60*5},
-            {x:30*5,y:60*5},
-            {x:30*5,y:20*5},
-            {x:160*5,y:20*5},
-            {x:160*5,y:200*5},
-            {x:100*5,y:200*5},
+            // {x:150*5,y:60*5},
+            // {x:30*5,y:60*5},
+            // {x:30*5,y:10*5},
+            // {x:160*5,y:10*5},
+            // {x:160*5,y:160*5},
+            // {x:100*5,y:160*5},
           ]
       )
       // train = new Train( Game.getUniqueTrainId(),ctx,bctx,'Mumbai Express','blue',25,'passenger',
@@ -301,8 +303,8 @@
       displayIteration(bctx,iteration)
       if(trains){
         trains.draw(iteration)
+        requestAnimationFrame(drawGame)
       }
-      requestAnimationFrame(drawGame)
     }
 
     function createGrid(bctx){

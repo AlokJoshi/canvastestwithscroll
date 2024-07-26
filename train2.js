@@ -22,9 +22,7 @@ class Train2 {
     this.type = type  //either passenger or freight
     this.speed = this.getSpeed(type, length) //speed will depend on whether it is passenger or freight and on length
     this.index = 0
-    this.prevStartX = 0
     this.prevXDirection
-    this.prevStartY = 0
     this.prevYDirection
     this.drawTracks()
     return this
@@ -39,7 +37,7 @@ class Train2 {
     let sA = []
     let sAFinal = []
     let radius = 100
-    let numdivisions = 3
+    let numdivisions = 10
 
     //convert to x and y 
     for (let i = 0; i < segmentsArray.length; i++) {
@@ -277,8 +275,6 @@ class Train2 {
   draw(iteration) {
     //speed is highest when one iteration results in 
     //one unit of movement in the train.
-    const coachWidth = 3  //pixels
-    const coachLength = 12 //pixels 
 
     let speed = this.speed
     if (iteration % speed == 0) {
@@ -287,38 +283,23 @@ class Train2 {
       return
     }
 
-    this.index = this.index % (this.points.length + this.length)
-    if (this.index == 0) this.prevStartX = 0; this.prevStartY = 0
+    //the location at which the first coach is
+    this.index = this.index % (this.points.length + this.length * (Game.coachLength+1))
+    // this.index = this.index % (this.points.length + this.length)
 
-    
-    //draw a coach/engine at this.index position
-    if (this.index < this.points.length) {
-
-      //this creates a new coach and draws it as well
-      let coach = new Coach(this.ctx,this.points[this.index].x, this.points[this.index].y,this.points[this.index].radian,
-        this.color)       
-      
-      // this.ctx.save()
-      // this.ctx.beginPath()
-      // this.ctx.fillStyle = this.color
-      // this.ctx.strokeStyle = 'black'
-      // this.ctx.lineWidth = 0.1
-
-      // this.ctx.translate(this.points[this.index].x + coachWidth / 2, this.points[this.index].y + coachWidth / 2)
-      // //rotation for points on the curve should be another Math.PI/2 radian
-      // // this.ctx.rotate(this.points[this.index].radian + (this.points[this.index].curve == false ? 0 : Math.PI / 2))
-      // this.ctx.rotate(this.points[this.index].radian)
-      // this.ctx.fillRect(0, 0, coachLength, coachWidth)
-      
-      // this.ctx.closePath()
-      // this.ctx.restore()
-    }
-
-    //draw a line from start towards the end
-    //console.log(train.length, train.path, train.path.to.length)
-    if (this.length && this.points.length > this.length) {
-
-      //draw as many lines as the train.length
+    for(let co=0;co<this.length;co++){
+      //draw a coach/engine at this.index position
+      // if (this.index-co*(Game.coachLength+1)>=0 && this.index+co*(Game.coachLength+1) < this.points.length) {
+        // let index = this.index-co*(Game.coachLength+1)
+      const index = this.index-co*(Game.coachLength+1)
+      if (index>=0 && index < this.points.length) {
+        //this creates a new coach and draws it as well
+        let coach = new Coach(this.ctx,this.points[index].x, this.points[index].y,this.points[index].radian,
+          this.color)       
+        
+      }else if (index>=this.points.length){
+        debugger
+      }
     }
 
   }
